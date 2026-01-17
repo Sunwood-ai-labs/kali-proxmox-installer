@@ -1,0 +1,58 @@
+---
+# =============================================================================
+# Kali Linux Ansible Playbook
+# =============================================================================
+# Configures Kali Linux VM after initial installation.
+# Use this to add packages, configure settings, and manage users.
+#
+# Usage:
+#   ansible-playbook -i inventory/kali.yml kali-playbook.yml
+#
+# With extra variables:
+#   ansible-playbook -i inventory/kali.yml kali-playbook.yml \
+#     -e "kali_user=maki packages=[vim,git,tmux]"
+#
+# Example tags:
+#   ansible-playbook -i inventory/kali.yml kali-playbook.yml --tags packages
+#   ansible-playbook -i inventory/kali.yml kali-playbook.yml --tags users
+# =============================================================================
+
+- name: Configure Kali Linux VM
+  hosts: kali_vms
+  become: yes
+  vars:
+    # Default variables (can be overridden)
+    kali_user: kali
+    install_packages:
+      - vim
+      - git
+      - tmux
+      - htop
+      - net-tools
+      - curl
+      - wget
+      - python3
+      - python3-pip
+    additional_packages: []
+    enable_ssh: true
+    enable_qemu_guest: true
+    configure_firewall: false
+    timezone: UTC
+
+  pre_tasks:
+    - name: Display target host information
+      debug:
+        msg: "Configuring {{ inventory_hostname }} as {{ kali_user }}"
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  roles:
+    - role: kali-setup
+
+  post_tasks:
+    - name: Display completion message
+      debug:
+        msg: "Kali Linux {{ inventory_hostname }} configuration complete!"

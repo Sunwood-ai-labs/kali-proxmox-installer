@@ -202,6 +202,44 @@ test_ssh_connection() {
 }
 
 #-------------------------------------------------------------------------------
+# SSH configに設定を追加
+#-------------------------------------------------------------------------------
+add_to_ssh_config() {
+    local config_file="$SSH_DIR/config"
+    local host_entry="prox-${VMID}"
+
+    log_step "SSH configに設定を追加中..."
+
+    # configファイルが存在しない場合は作成
+    if [[ ! -f "$config_file" ]]; then
+        log_info "SSH configファイルを作成: $config_file"
+        touch "$config_file"
+        chmod 600 "$config_file"
+    fi
+
+    # 重複チェック
+    if grep -q "^Host ${host_entry}" "$config_file" 2>/dev/null; then
+        log_warning "Host ${host_entry} は既に存在します"
+        log_info "既存の設定を保持します"
+        return 0
+    fi
+
+    # 設定を追加
+    cat >> "$config_file" << CONFIG_EOF
+
+# Proxmox VM - 自動追加
+Host ${host_entry}
+    HostName ${VM_IP}
+    User ${VM_USER}
+    IdentityFile ${PRIVATE_KEY}
+    StrictHostKeyChecking no
+CONFIG_EOF
+
+    log_success "SSH configに追加完了: Host ${host_entry}"
+    log_info "これで 'ssh ${host_entry}' で接続できます"
+}
+
+#-------------------------------------------------------------------------------
 # 簡易接続スクリプトを生成
 #-------------------------------------------------------------------------------
 generate_connect_script() {
@@ -247,7 +285,7 @@ show_summary() {
     echo "  方法2: 直接SSH"
     echo "    ssh -i $PRIVATE_KEY ${VM_USER}@${VM_IP}"
     echo ""
-    echo "  方法3: SSH configに追加後"
+    echo "  方法3: SSH config（自動追加済み）"
     echo "    ssh prox-${VMID}"
     echo ""
     echo "==============================================================================="
@@ -272,6 +310,7 @@ main() {
     check_vm_connectivity
     copy_public_key
     test_ssh_connection
+    add_to_ssh_config
     generate_connect_script
     show_summary
 

@@ -20,8 +20,8 @@ STORAGE="local-lvm"
 ISO_STORAGE="local"
 
 # VM設定
-VMID="200"
-VM_NAME="kali-linux"
+VMID="201"
+VM_NAME="kali-linux-201"
 VM_MEMORY="4096"
 VM_CORES="2"
 VM_SOCKETS="1"
@@ -29,11 +29,11 @@ DISK_SIZE="50"
 
 # ネットワーク設定
 BRIDGE="vmbr0"
-STATIC_IP="192.168.0.200"
+STATIC_IP="192.168.0.201"
 GATEWAY="192.168.0.1"
 NETMASK="255.255.255.0"
 DNS_SERVER="8.8.8.8"
-HOSTNAME="kali"
+HOSTNAME="kali-201"
 DOMAIN="local"
 
 # ユーザー設定
@@ -179,8 +179,8 @@ PRESEED_EOF
     sed -i "s|__PASSWORD__|${PASSWORD}|g" "$preseed_file"
     sed -i "s|__ROOT_PASSWORD__|${ROOT_PASSWORD}|g" "$preseed_file"
 
-    log_success "preseedファイル作成完了: $preseed_file"
     echo "$preseed_file"
+    log_success "preseedファイル作成完了: $preseed_file" >&2
 }
 
 #-------------------------------------------------------------------------------
@@ -254,9 +254,10 @@ create_autoinstall_vm() {
 
     # 起動パラメータにpreseedを指定
     local local_ip=$(hostname -I | awk '{print $1}')
-    log_info "起動パラメータを設定中... (preseed: http://${local_ip}:8000/$(basename $preseed_file))"
+    local preseed_filename="kali-preseed.cfg"
+    log_info "起動パラメータを設定中... (preseed: http://${local_ip}:8000/${preseed_filename})"
 
-    qm set $VMID --args "auto=true priority=critical url=http://${local_ip}:8000/$(basename $preseed_file)"
+    qm set $VMID --args "auto=true priority=critical url=http://${local_ip}:8000/${preseed_filename}"
 
     # VMを起動
     log_info "VMを起動中..."
@@ -283,21 +284,13 @@ main() {
     echo ""
 
     log_warning "このスクリプトはKali Linuxを完全自動インストールします"
-    log_warning "既存のVMID $VMID は上書きされます"
-    echo ""
 
-    # 既存VMのチェック
+    # 既存VMのチェックと削除
     if qm status $VMID &> /dev/null; then
-        log_error "VMID $VMID は既に存在します"
-        read -p "既存のVMを削除して続行しますか？ [y/N]: " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            log_info "VMを削除中..."
-            qm destroy $VMID --destroy-unreferenced-disks 1 --purge 1
-        else
-            log_info "キャンセルしました"
-            exit 0
-        fi
+        log_warning "VMID $VMID は既に存在します。削除して再作成します..."
+        log_info "VMを削除中..."
+        qm destroy $VMID --destroy-unreferenced-disks 1 --purge 1
+        log_success "VM削除完了"
     fi
 
     # preseedファイル作成

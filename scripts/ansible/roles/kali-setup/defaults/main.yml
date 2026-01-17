@@ -1,0 +1,44 @@
+---
+# =============================================================================
+# Kali Linux Setup - Default Variables
+# =============================================================================
+# These variables can be overridden in the playbook or inventory.
+# =============================================================================
+
+# User configuration
+kali_user: kali
+kali_fullname: Kali User
+
+# System configuration
+timezone: UTC
+kali_update_system: true
+
+# Packages to install
+install_packages:
+  - vim
+  - git
+  - tmux
+  - htop
+  - net-tools
+  - curl
+  - wget
+  - python3
+  - python3-pip
+  - python3-venv
+
+# Additional packages (empty by default)
+additional_packages: []
+
+# Service configuration
+enable_ssh: true
+enable_qemu_guest: true
+configure_firewall: false
+
+# Network configuration
+configure_static_ip: false
+# static_ip_address: 192.168.0.200
+# static_netmask: 24
+# static_gateway: 192.168.0.1
+# static_dns_servers:
+#   - 8.8.8.8
+#   - 8.8.4.4

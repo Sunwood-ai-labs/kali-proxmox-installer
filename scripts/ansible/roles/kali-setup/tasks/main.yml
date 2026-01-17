@@ -1,0 +1,107 @@
+---
+# =============================================================================
+# Kali Linux Setup - Main Tasks
+# =============================================================================
+# Tasks for configuring Kali Linux VM after installation.
+# =============================================================================
+
+# System configuration
+- name: Set timezone
+  timezone:
+    name: "{{ timezone }}"
+  tags: system
+
+- name: Update system packages
+  apt:
+    upgrade: dist
+    update_cache: yes
+  when: kali_update_system | default(true)
+  tags: system, update
+
+# Package installation
+- name: Install default packages
+  apt:
+    name: "{{ install_packages }}"
+    state: present
+  tags: packages
+
+- name: Install additional packages
+  apt:
+    name: "{{ additional_packages }}"
+    state: present
+  when: additional_packages | length > 0
+  tags: packages
+
+# SSH configuration
+- name: Ensure SSH service is enabled
+  systemd:
+    name: ssh
+    enabled: "{{ enable_ssh }}"
+    state: started
+  when: enable_ssh
+  tags: ssh
+
+- name: Configure SSH to allow key-based authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#\?PubkeyAuthentication'
+    line: 'PubkeyAuthentication yes'
+    state: present
+  notify: restart sshd
+  when: enable_ssh
+  tags: ssh
+
+# QEMU Guest Agent
+- name: Ensure QEMU guest agent is enabled
+  systemd:
+    name: qemu-guest-agent
+    enabled: "{{ enable_qemu_guest }}"
+    state: started
+  when: enable_qemu_guest
+  tags: qemu
+
+# User configuration
+- name: Ensure user exists
+  user:
+    name: "{{ kali_user }}"
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+  tags: users
+
+- name: Configure sudo for user
+  lineinfile:
+    path: "/etc/sudoers.d/{{ kali_user }}"
+    line: "{{ kali_user }} ALL=(ALL:ALL) NOPASSWD:ALL"
+    create: yes
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  tags: users
+
+# Firewall configuration (optional)
+- name: Install UFW firewall
+  apt:
+    name: ufw
+    state: present
+  when: configure_firewall
+  tags: firewall
+
+- name: Configure UFW
+  block:
+    - name: Allow SSH through firewall
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+  when: configure_firewall
+  tags: firewall
+
+# Cleanup
+- name: Clean apt cache
+  apt:
+    autoclean: yes
+    autoremove: yes
+  tags: system
