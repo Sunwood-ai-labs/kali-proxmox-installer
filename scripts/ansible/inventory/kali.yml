@@ -1,0 +1,54 @@
+---
+# =============================================================================
+# Ansible Inventory for Kali Linux VMs
+# =============================================================================
+# Define your Kali Linux VMs here.
+#
+# Usage:
+#   ansible-playbook -i inventory/kali.yml kali-playbook.yml
+#
+# You can define multiple VMs and target them using:
+#   ansible-playbook -i inventory/kali.yml kali-playbook.yml --limit kali-01
+# =============================================================================
+
+# Kali Linux VMs group
+kali_vms:
+  hosts:
+    # Example VM configuration
+    kali-01:
+      ansible_host: 192.168.0.200
+      ansible_user: kali
+      # ansible_port: 22  # Default SSH port
+      # ansible_python_interpreter: /usr/bin/python3
+
+    # Add more VMs as needed
+    # kali-02:
+    #   ansible_host: 192.168.0.201
+    #   ansible_user: kali
+
+# Group variables for all Kali VMs
+# These can be overridden per-host
+all:
+  vars:
+    # Ansible configuration
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+    ansible_python_interpreter: /usr/bin/python3
+
+    # Kali configuration
+    kali_user: kali
+    install_packages:
+      - vim
+      - git
+      - tmux
+      - htop
+      - net-tools
+      - curl
+      - wget
+      - python3
+      - python3-pip
+
+    # Optional: Enable services
+    enable_ssh: true
+    enable_qemu_guest: true
+    configure_firewall: false
+    timezone: UTC
