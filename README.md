@@ -1,16 +1,18 @@
-# Proxmox VE - Kali Linux 自動セットアップスクリプト
-
-<p align="center">
+<div align="center">
   <img src="assets/header.jpg" alt="Kali Prox Installer Header" width="100%">
-</p>
+</div>
 
-<p align="center">
+<div align="center">
   [![Shell Script](https://img.shields.io/badge/Shell-Script-black?style=flat-square&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
   [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
   [![GitHub](https://img.shields.io/badge/GitHub-kali--proxmox--installer-lightgrey?style=flat-square&logo=github)](https://github.com/Sunwood-ai-labs/kali-proxmox-installer)
-</p>
+</div>
 
-Proxmox VE上にKali Linux VMを自動作成するbashスクリプト集です。
+# Proxmox VE - Kali Linux 自動セットアップスクリプト
+
+<div align="center">
+  Proxmox VE上にKali Linux VMを自動作成するbashスクリプト集です。
+</div>
 
 ## 特徴
 
